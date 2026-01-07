@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location | 뚜띠콜로리 뮤제오</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FFEAA7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #FF6B6B;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            transition: 0.3s;
+        }
+
+        /* Page Header */
+        .page-header {
+            height: 50vh;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFEAA7 50%, #96CEB4 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: relative;
+            padding-top: 60px;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .page-header h1 {
+            position: relative;
+            z-index: 1;
+            font-size: 3.5rem;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease;
+        }
+
+        .page-header p {
+            position: relative;
+            z-index: 1;
+            font-size: 1.3rem;
+            margin-top: 1rem;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease 0.3s backwards;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 80px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+        .section-title span {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Map Section */
+        .map-section {
+            margin-bottom: 80px;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 450px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .map-placeholder {
+            text-align: center;
+            color: #666;
+        }
+
+        .map-placeholder .icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .map-placeholder p {
+            font-size: 1.2rem;
+        }
+
+        .map-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .map-overlay h4 {
+            color: #4ECDC4;
+            margin-bottom: 0.5rem;
+        }
+
+        .map-overlay p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 80px;
+        }
+
+        .info-box {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .info-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .info-box:nth-child(1) { border-left: 4px solid #FF6B6B; }
+        .info-box:nth-child(2) { border-left: 4px solid #4ECDC4; }
+        .info-box:nth-child(3) { border-left: 4px solid #45B7D1; }
+        .info-box:nth-child(4) { border-left: 4px solid #96CEB4; }
+
+        .info-box h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-box h3 .icon {
+            font-size: 1.5rem;
+        }
+
+        .info-box p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .info-box ul {
+            list-style: none;
+            color: #666;
+        }
+
+        .info-box ul li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-box ul li:last-child {
+            border-bottom: none;
+        }
+
+        /* Transportation Section */
+        .transport-section {
+            background: #f9f9f9;
+            padding: 60px;
+            border-radius: 30px;
+            margin-bottom: 80px;
+        }
+
+        .transport-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .transport-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .transport-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .transport-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .transport-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .transport-card p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        /* Parking Section */
+        .parking-section {
+            margin-bottom: 80px;
+        }
+
+        .parking-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .parking-text h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #4ECDC4;
+        }
+
+        .parking-text p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        .parking-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .parking-feature {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .parking-feature:nth-child(2) {
+            background: linear-gradient(135deg, #4ECDC4, #7BDDD6);
+        }
+
+        .parking-feature:nth-child(3) {
+            background: linear-gradient(135deg, #45B7D1, #72C9DD);
+        }
+
+        .parking-image {
+            height: 300px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #96CEB4, #B5DBC9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Nearby Section */
+        .nearby-section {
+            margin-bottom: 80px;
+        }
+
+        .nearby-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .nearby-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .nearby-item:hover {
+            transform: scale(1.05);
+        }
+
+        .nearby-item .icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nearby-item h4 {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .nearby-item p {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px;
+            border-radius: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .cta-section h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .cta-btn.secondary {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            padding: 3rem 5%;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: color 0.3s;
+            text-decoration: none;
+        }
+
+        .social-links a:hover {
+            color: #4ECDC4;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .transport-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nearby-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                flex-direction: column;
+                padding: 1rem;
+                text-align: center;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .page-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .parking-info {
+                grid-template-columns: 1fr;
+            }
+
+            .parking-image {
+                height: 200px;
+            }
+
+            .nearby-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .map-overlay {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                margin-top: 1rem;
+                width: 100%;
+            }
+
+            .map-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="../index.html" class="logo">Tutti Colori Museo</a>
+        <ul class="nav-links">
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="../about/index.html">About</a></li>
+            <li><a href="index.html" class="active">Location</a></li>
+            <li><a href="../index.html#contact">Contact</a></li>
+        </ul>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1>Location</h1>
+        <p>뚜띠콜로리 뮤제오 오시는 길</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Map Section -->
+        <section class="map-section">
+            <h2 class="section-title">Find <span>Us</span></h2>
+            <div class="map-container">
+                <div class="map-placeholder">
+                    <div class="icon">📍</div>
+                    <p>제주특별자치도 제주시 애월읍 평화로 2159</p>
+                </div>
+                <div class="map-overlay">
+                    <h4>뚜띠콜로리 뮤제오</h4>
+                    <p>제주특별자치도 제주시 애월읍 평화로 2159</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Info Grid -->
+        <section class="info-grid">
+            <div class="info-box">
+                <h3><span class="icon">📍</span> 주소</h3>
+                <p>제주특별자치도 제주시<br>애월읍 평화로 2159<br><br>우편번호: 63047</p>
+            </div>
+            <div class="info-box">
+                <h3><span class="icon">🕐</span> 운영시간</h3>
+                <ul>
+                    <li>평일: 09:00 - 19:00</li>
+                    <li>주말/공휴일: 09:00 - 20:00</li>
+                    <li>마지막 입장: 폐관 1시간 전</li>
+                    <li>연중무휴 운영</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <h3><span class="icon">🎟️</span> 입장료</h3>
+                <ul>
+                    <li>성인 (19세 이상): 15,000원</li>
+                    <li>청소년 (13-18세): 12,000원</li>
+                    <li>어린이 (4-12세): 10,000원</li>
+                    <li>36개월 미만: 무료</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <h3><span class="icon">📞</span> 연락처</h3>
+                <p>전화: 064-123-4567<br>팩스: 064-123-4568<br>이메일: info@tutticolori.kr<br><br>단체예약: group@tutticolori.kr</p>
+            </div>
+        </section>
+
+        <!-- Transportation Section -->
+        <section class="transport-section">
+            <h2 class="section-title">How to <span>Get Here</span></h2>
+            <div class="transport-grid">
+                <div class="transport-card">
+                    <div class="transport-icon">✈️</div>
+                    <h4>비행기</h4>
+                    <p>제주국제공항에서<br>택시 약 30분 소요<br>렌터카 이용 시 25분<br><br>공항버스 102번 이용 가능</p>
+                </div>
+                <div class="transport-card">
+                    <div class="transport-icon">🚌</div>
+                    <h4>버스</h4>
+                    <p>제주시외버스터미널에서<br>202번, 292번 버스 이용<br>'평화로뮤제오' 정류장 하차<br><br>약 40분 소요</p>
+                </div>
+                <div class="transport-card">
+                    <div class="transport-icon">🚗</div>
+                    <h4>자가용 / 렌터카</h4>
+                    <p>제주공항 → 평화로 방면<br>애월 방면으로 직진<br>네비게이션: '뚜띠콜로리 뮤제오'<br><br>무료 주차장 완비</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Parking Section -->
+        <section class="parking-section">
+            <h2 class="section-title">Parking <span>Info</span></h2>
+            <div class="parking-info">
+                <div class="parking-text">
+                    <h3>넓은 무료 주차장</h3>
+                    <p>뚜띠콜로리 뮤제오는 방문객의 편의를 위해 넓은 무료 주차장을 운영하고 있습니다. 승용차 200대, 대형버스 20대 동시 주차가 가능합니다.</p>
+                    <p>장애인 전용 주차구역과 전기차 충전소도 마련되어 있습니다.</p>
+                    <div class="parking-features">
+                        <span class="parking-feature">무료 주차</span>
+                        <span class="parking-feature">전기차 충전</span>
+                        <span class="parking-feature">장애인 주차</span>
+                    </div>
+                </div>
+                <div class="parking-image">🅿️</div>
+            </div>
+        </section>
+
+        <!-- Nearby Section -->
+        <section class="nearby-section">
+            <h2 class="section-title">Nearby <span>Attractions</span></h2>
+            <div class="nearby-grid">
+                <div class="nearby-item">
+                    <div class="icon">🏖️</div>
+                    <h4>애월 해안도로</h4>
+                    <p>차로 10분</p>
+                </div>
+                <div class="nearby-item">
+                    <div class="icon">☕</div>
+                    <h4>애월 카페거리</h4>
+                    <p>차로 8분</p>
+                </div>
+                <div class="nearby-item">
+                    <div class="icon">🌊</div>
+                    <h4>곽지해수욕장</h4>
+                    <p>차로 15분</p>
+                </div>
+                <div class="nearby-item">
+                    <div class="icon">🗻</div>
+                    <h4>한라산 국립공원</h4>
+                    <p>차로 25분</p>
+                </div>
+                <div class="nearby-item">
+                    <div class="icon">🌺</div>
+                    <h4>한림공원</h4>
+                    <p>차로 20분</p>
+                </div>
+                <div class="nearby-item">
+                    <div class="icon">🐴</div>
+                    <h4>제주마 목장</h4>
+                    <p>차로 12분</p>
+                </div>
+                <div class="nearby-item">
+                    <div class="icon">🍊</div>
+                    <h4>감귤 체험농장</h4>
+                    <p>차로 5분</p>
+                </div>
+                <div class="nearby-item">
+                    <div class="icon">🍽️</div>
+                    <h4>애월 맛집거리</h4>
+                    <p>차로 10분</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <h3>방문을 환영합니다!</h3>
+            <p>색채의 세계에서 특별한 하루를 보내세요</p>
+            <div class="cta-buttons">
+                <a href="tel:064-123-4567" class="cta-btn">전화 문의</a>
+                <a href="../index.html#contact" class="cta-btn secondary">온라인 문의</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="social-links">
+                <a href="#">Instagram</a>
+                <a href="#">Facebook</a>
+                <a href="#">YouTube</a>
+            </div>
+            <p>&copy; 2025 Tutti Colori Museo. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Navigation Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.classList.remove('active');
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements
+        document.querySelectorAll('.info-box, .transport-card, .nearby-item').forEach(item => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(30px)';
+            item.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(item);
+        });
+    </script>
+</body>
+</html>
